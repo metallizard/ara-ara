@@ -31,8 +31,10 @@ public class Player : MonoBehaviour
         Collider2D[] overlappedCollider = Physics2D.OverlapCircleAll(transform.position, 3);
         foreach(var col in overlappedCollider)
         {
+            if (!col.GetComponentInParent<Cloud>()) continue;
+
             Vector3 dir = (col.transform.position - transform.position).normalized;
-            col.GetComponent<Cloud>().Push(dir, (6 - Vector3.Distance(transform.position, col.transform.position)) * 10);
+            col.GetComponentInParent<Cloud>().Push(dir, (6 - Vector3.Distance(transform.position, col.transform.position)) * 1);
         }
     }
 }

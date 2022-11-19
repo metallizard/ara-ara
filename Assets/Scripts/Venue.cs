@@ -4,15 +4,36 @@ using UnityEngine;
 
 public class Venue : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public delegate void Destroyed();
+    public event Destroyed OnDestroyed;
+
+    private delegate void Damaged(float currentHP);
+    private event Damaged OnDamaged;
+
+    private float _health;
+
+    private void Awake()
     {
-        
+        OnDamaged += OnHealthReduced;
+        _health = 10;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ReduceHealth(float damage)
     {
-        
+        _health = damage > _health ? 0 : _health -= damage;
+
+        OnDamaged?.Invoke(_health);
+    }
+
+    private void OnHealthReduced(float currentHP)
+    {
+        Debug.Log(currentHP);
+
+
+        if(currentHP == 0)
+        {
+            OnDestroyed?.Invoke();
+            gameObject.SetActive(false);
+        }
     }
 }

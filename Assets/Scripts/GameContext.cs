@@ -1,10 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameContext : MonoBehaviour
 {
     public delegate void TimerTick(float t);
-
     public static event TimerTick OnTimerTick;
 
     [SerializeField]
@@ -16,7 +17,14 @@ public class GameContext : MonoBehaviour
     [SerializeField]
     private float _gameTime;
 
+    private Dictionary<Cloud, Venue> _cloudOnVenue = new Dictionary<Cloud, Venue>();
+
     private IEnumerator _timerLoop;
+
+    private void Awake()
+    {
+        OnTimerTick += GameContext_OnTimerTick;
+    }
 
     private void Start()
     {
@@ -29,7 +37,7 @@ public class GameContext : MonoBehaviour
         _timerLoop = TimerLoop();
         StartCoroutine(_timerLoop);
 
-        float count = 20;
+        float count = 5;
         while(count > 0)
         {
             SpawnCloud();
@@ -50,10 +58,47 @@ public class GameContext : MonoBehaviour
 
     private void SpawnCloud()
     {
-        GameObject cloud = Instantiate<GameObject>(_prefabCloud, GetSpawnPosition(), Quaternion.identity);
-        cloud.GetComponent<Cloud>().SetTarget(_targetFinder.GetTarget());
+        GameObject cloudObject = Instantiate<GameObject>(_prefabCloud, GetSpawnPosition(), Quaternion.identity);
+        Cloud cloud = cloudObject.GetComponent<Cloud>();
+
+        cloud.SetTarget(_targetFinder.GetTarget());
+        cloud.OnDestroyed += Cloud_OnDestroyed;
+        cloud.OnLeaveVenue += Cloud_OnLeaveVenue;
+        cloud.OnReachVenue += Cloud_OnReachVenue;
     }
 
+    private void DistributeDamage()
+    {
+        var affected = _cloudOnVenue.Values.ToArray();
+
+        for(int i = 0; i < affected.Length; i++)
+        {
+            affected[i].ReduceHealth(1);
+        }
+    }
+
+    private void GameContext_OnTimerTick(float t)
+    {
+        DistributeDamage();
+    }
+
+    private void Cloud_OnReachVenue(Cloud cloud, Venue venue)
+    {
+        _cloudOnVenue.Add(cloud, venue);
+    }
+
+    private void Cloud_OnLeaveVenue(Cloud cloud)
+    {
+        _cloudOnVenue.Remove(cloud);
+    }
+
+    private void Cloud_OnDestroyed(Cloud cloud)
+    {
+        if(_cloudOnVenue.ContainsKey(cloud))
+        {
+            _cloudOnVenue.Remove(cloud);
+        }
+    }
 
     private Vector3 GetSpawnPosition()
     {
