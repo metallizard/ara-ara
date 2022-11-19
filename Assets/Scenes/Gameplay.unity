@@ -305,8 +305,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be6a074338db24a94bf0b15f0aa145c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ListenToKeyboard: 0
-  ListenToJoystick: 1
+  UseKeyboard: 0
+  UseJoystick: 1
   _joystick: {fileID: 1872192435}
 --- !u!212 &524564572
 SpriteRenderer:
