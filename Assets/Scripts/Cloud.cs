@@ -10,6 +10,9 @@ public class Cloud : MonoBehaviour
     public delegate void LeaveVenue(Cloud cloud);
     public event LeaveVenue OnLeaveVenue;
 
+    public delegate void TargetDestroyed(Cloud cloud, Venue venue);
+    public event TargetDestroyed OnTargetDestroyed;
+
     public delegate void Destroyed(Cloud cloud);
     public event Destroyed OnDestroyed;
 
@@ -24,9 +27,16 @@ public class Cloud : MonoBehaviour
     public void SetTarget(Venue venue)
     {
         _target = venue;
+        _target.OnDestroyed += OnCloudTargetDestroyed;
+
         Speed = Random.Range(1.5f, 2.25f);
         TimeToLive = 10;
         Invoke("Destroy", TimeToLive);
+    }
+
+    private void OnCloudTargetDestroyed(Venue venue)
+    {
+        OnTargetDestroyed?.Invoke(this, venue);
     }
 
     public void Push(Vector3 direction, float force)

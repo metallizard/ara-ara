@@ -2,11 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameContext : MonoBehaviour
 {
     public delegate void TimerTick(float t);
     public static event TimerTick OnTimerTick;
+
+    public delegate void VenueListChanged(List<Venue> venues);
+    public static event VenueListChanged OnVenueListChanged;
 
     [SerializeField]
     private GameObject _prefabCloud;
@@ -19,11 +23,16 @@ public class GameContext : MonoBehaviour
 
     private Dictionary<Cloud, Venue> _cloudOnVenue = new Dictionary<Cloud, Venue>();
 
+    private List<Cloud> _clouds = new List<Cloud>();
+
+    private List<Venue> _venues = new List<Venue>();
+
     private IEnumerator _timerLoop;
 
     private void Awake()
     {
         OnTimerTick += GameContext_OnTimerTick;
+        Venue.OnVenueSpawned += OnVenueSpawned;
     }
 
     private void Start()
@@ -46,6 +55,12 @@ public class GameContext : MonoBehaviour
         }
     }
 
+    private void GameOver()
+    {
+        Debug.Log("Game Over");
+        SceneManager.LoadScene("MainMenu");
+    }
+
     private IEnumerator TimerLoop()
     {
         while (_gameTime > 0)
@@ -65,6 +80,9 @@ public class GameContext : MonoBehaviour
         cloud.OnDestroyed += Cloud_OnDestroyed;
         cloud.OnLeaveVenue += Cloud_OnLeaveVenue;
         cloud.OnReachVenue += Cloud_OnReachVenue;
+        cloud.OnTargetDestroyed += Cloud_OnTargetDestroyed;
+
+        _clouds.Add(cloud);
     }
 
     private void DistributeDamage()
@@ -74,6 +92,38 @@ public class GameContext : MonoBehaviour
         for(int i = 0; i < affected.Length; i++)
         {
             affected[i].ReduceHealth(1);
+        }
+    }
+
+    #region Event Listener
+    private void OnVenueSpawned(Venue venue)
+    {
+        if(_venues.Contains(venue))
+        {
+            Debug.LogError("lah udah ada venuenya cok");
+            return;
+        }
+
+        _venues.Add(venue);
+        OnVenueListChanged?.Invoke(_venues);
+
+        venue.OnDestroyed += OnVenueDestroyed;
+    }
+
+    private void OnVenueDestroyed(Venue venue)
+    {
+        if (!_venues.Contains(venue))
+        {
+            Debug.LogError("lah ga ada venue yang bisa didestroy cok");
+            return;
+        }
+
+        _venues.Remove(venue);
+        OnVenueListChanged?.Invoke(_venues);
+
+        if (_venues.Count == 0)
+        {
+            GameOver();
         }
     }
 
@@ -92,13 +142,24 @@ public class GameContext : MonoBehaviour
         _cloudOnVenue.Remove(cloud);
     }
 
+    private void Cloud_OnTargetDestroyed(Cloud cloud, Venue venue)
+    {
+        cloud.SetTarget(_targetFinder.GetTarget());
+    }
+
     private void Cloud_OnDestroyed(Cloud cloud)
     {
         if(_cloudOnVenue.ContainsKey(cloud))
         {
             _cloudOnVenue.Remove(cloud);
         }
+
+        if(_clouds.Contains(cloud))
+        {
+            _clouds.Remove(cloud);
+        }
     }
+    #endregion
 
     private Vector3 GetSpawnPosition()
     {

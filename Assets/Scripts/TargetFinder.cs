@@ -4,17 +4,20 @@ using UnityEngine;
 
 public class TargetFinder : MonoBehaviour
 {
-    private Venue[] _venues;
+    private List<Venue> _venues = new List<Venue>();
 
     private void Awake()
     {
-        _venues = FindObjectsOfType<Venue>();
+        GameContext.OnVenueListChanged += OnVenueListChanged;
+    }
 
-        Debug.Log(_venues.Length);
+    private void OnVenueListChanged(List<Venue> venues)
+    {
+        _venues = venues;
     }
 
     public Venue GetTarget()
     {
-        return _venues[0];
+        return _venues[Random.Range(0, _venues.Count)];
     }
 }

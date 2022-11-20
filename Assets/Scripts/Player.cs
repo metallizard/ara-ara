@@ -10,6 +10,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float _speed;
 
+    [SerializeField]
+    private bool _alwaysRepel;
+
     private void Start()
     {
         _input.OnValueChanged += Move;
@@ -22,8 +25,7 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        //if(Input.GetKeyDown(KeyCode.Space))
-        Repel();
+        if(_alwaysRepel || Input.GetKeyDown(KeyCode.Space)) Repel();
     }
 
     public void Repel()
