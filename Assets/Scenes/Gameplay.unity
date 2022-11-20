@@ -996,7 +996,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _input: {fileID: 524564571}
   _speed: 10
-  _alwaysRepel: 0
+  _alwaysRepel: 1
 --- !u!1 &674544939
 GameObject:
   m_ObjectHideFlags: 0
