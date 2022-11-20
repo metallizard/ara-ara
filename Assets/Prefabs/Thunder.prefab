@@ -9,12 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8282952382111764129}
-  - component: {fileID: -2178455330749709048}
   - component: {fileID: 9157303316135729615}
   - component: {fileID: 3848073933901443350}
   - component: {fileID: 8749795745262898577}
+  - component: {fileID: 2582915233003768913}
   m_Layer: 0
-  m_Name: Cloud
+  m_Name: Thunder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35,20 +35,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-2178455330749709048
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6437393120909897991}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4bb04ca0b5c8e48e5a338f5eeccebf7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Speed: 1
-  TimeToLive: 0
 --- !u!50 &9157303316135729615
 Rigidbody2D:
   serializedVersion: 4
@@ -111,7 +97,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 5e856e9aabe334ae1bf628797015c489, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f471ca7d8287a404eaad0e8d348577f2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -139,12 +125,27 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.03, y: 5.37}
+    oldSize: {x: 6.04, y: 6.01}
     newSize: {x: 6.03, y: 5.37}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 6.03, y: 5.37}
+  m_Size: {x: 6.04, y: 6.01}
   m_EdgeRadius: 0
+--- !u!114 &2582915233003768913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6437393120909897991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149caea50c2bf440988398e48e37ba57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Speed: 0
+  TimeToLive: 0
+  _thunderPrefab: {fileID: 7271536070822964193, guid: e9d559c4abd2c43a3a388cff69e6ad75, type: 3}

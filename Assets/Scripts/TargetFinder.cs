@@ -18,6 +18,8 @@ public class TargetFinder : MonoBehaviour
 
     public Venue GetTarget()
     {
+        if (_venues.Count == 0) return null;
+
         return _venues[Random.Range(0, _venues.Count)];
     }
 }

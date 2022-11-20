@@ -13,6 +13,9 @@ public class GameContext : MonoBehaviour
     public static event VenueListChanged OnVenueListChanged;
 
     [SerializeField]
+    private AudioManager _audioManager;
+
+    [SerializeField]
     private GameObject _prefabCloud;
 
     [SerializeField]
@@ -29,10 +32,13 @@ public class GameContext : MonoBehaviour
 
     private IEnumerator _timerLoop;
 
+    private int _cloudVisibleCount = 0;
+
     private void Awake()
     {
         OnTimerTick += GameContext_OnTimerTick;
         Venue.OnVenueSpawned += OnVenueSpawned;
+        Player.OnDead += Player_OnDead;
     }
 
     private void Start()
@@ -43,10 +49,12 @@ public class GameContext : MonoBehaviour
     // Start is called before the first frame update
     IEnumerator StartGame()
     {
+        _audioManager.Play();
+
         _timerLoop = TimerLoop();
         StartCoroutine(_timerLoop);
 
-        float count = 5;
+        float count = 3;
         while(count > 0)
         {
             SpawnCloud();
@@ -57,7 +65,6 @@ public class GameContext : MonoBehaviour
 
     private void GameOver()
     {
-        Debug.Log("Game Over");
         SceneManager.LoadScene("MainMenu");
     }
 
@@ -81,9 +88,11 @@ public class GameContext : MonoBehaviour
         cloud.OnLeaveVenue += Cloud_OnLeaveVenue;
         cloud.OnReachVenue += Cloud_OnReachVenue;
         cloud.OnTargetDestroyed += Cloud_OnTargetDestroyed;
+        cloud.OnVisibleToCamera += Cloud_OnVisibleToCamera;
+        cloud.OnLeaveCamera += Cloud_OnLeaveCamera;
 
         _clouds.Add(cloud);
-    }
+    }  
 
     private void DistributeDamage()
     {
@@ -96,6 +105,28 @@ public class GameContext : MonoBehaviour
     }
 
     #region Event Listener
+    private void Player_OnDead()
+    {
+        GameOver();
+    }
+
+    private void Cloud_OnLeaveCamera(Cloud cloud)
+    {
+        _cloudVisibleCount -= 1;
+        if (_cloudVisibleCount <= 0)
+        {
+            _cloudVisibleCount = 0;
+            _audioManager?.StopRain();
+        }
+    }
+
+    private void Cloud_OnVisibleToCamera(Cloud cloud)
+    {
+        _cloudVisibleCount++;
+
+        _audioManager?.PlayRain();
+    }
+
     private void OnVenueSpawned(Venue venue)
     {
         if(_venues.Contains(venue))
@@ -144,7 +175,11 @@ public class GameContext : MonoBehaviour
 
     private void Cloud_OnTargetDestroyed(Cloud cloud, Venue venue)
     {
-        cloud.SetTarget(_targetFinder.GetTarget());
+        var newTarget = _targetFinder.GetTarget();
+        if(newTarget)
+        {
+            cloud.SetTarget(newTarget);
+        }
     }
 
     private void Cloud_OnDestroyed(Cloud cloud)
@@ -175,5 +210,20 @@ public class GameContext : MonoBehaviour
         {
             return Camera.main.ViewportToWorldPoint(new Vector3(clampedAxis, Random.Range(1 - spawnOffset, spawnOffset), 0));
         }
+    }
+
+    private void OnDestroy()
+    {
+        foreach (var cloud in _clouds)
+        {
+            cloud.OnDestroyed -= Cloud_OnDestroyed;
+            cloud.OnLeaveVenue -= Cloud_OnLeaveVenue;
+            cloud.OnReachVenue -= Cloud_OnReachVenue;
+            cloud.OnTargetDestroyed -= Cloud_OnTargetDestroyed;
+            cloud.OnVisibleToCamera -= Cloud_OnVisibleToCamera;
+            cloud.OnLeaveCamera -= Cloud_OnLeaveCamera;
+        }
+
+        OnTimerTick -= GameContext_OnTimerTick;
     }
 }

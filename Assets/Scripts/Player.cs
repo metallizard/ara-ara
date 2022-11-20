@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public delegate void Dead();
+    public static event Dead OnDead;
+
     [SerializeField]
     private PlayerInput _input;
 
@@ -38,5 +41,10 @@ public class Player : MonoBehaviour
             Vector3 dir = (col.transform.position - transform.position).normalized;
             col.GetComponentInParent<Cloud>().Push(dir, (6 - Vector3.Distance(transform.position, col.transform.position)) * 1);
         }
+    }
+
+    public void Kill()
+    {
+        OnDead?.Invoke();
     }
 }

@@ -19,4 +19,9 @@ public class TimerText : MonoBehaviour
     {
         _text.text = $"Venue Time\n{t}";
     }
+
+    private void OnDestroy()
+    {
+        GameContext.OnTimerTick -= OnTimerTick;
+    }
 }

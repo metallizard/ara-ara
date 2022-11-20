@@ -16,6 +16,12 @@ public class Cloud : MonoBehaviour
     public delegate void Destroyed(Cloud cloud);
     public event Destroyed OnDestroyed;
 
+    public delegate void VisibleToCamera(Cloud cloud);
+    public event VisibleToCamera OnVisibleToCamera;
+
+    public delegate void LeaveCamera(Cloud cloud);
+    public event LeaveCamera OnLeaveCamera;
+
     private Venue _target;
 
     private bool _beingPushed;
@@ -24,12 +30,17 @@ public class Cloud : MonoBehaviour
 
     public float TimeToLive;
 
+    protected virtual void Awake()
+    {
+
+    }
+
     public void SetTarget(Venue venue)
     {
         _target = venue;
         _target.OnDestroyed += OnCloudTargetDestroyed;
 
-        Speed = Random.Range(1.5f, 2.25f);
+        Speed = Random.Range(0.5f, 1.25f);
         TimeToLive = 10;
         Invoke("Destroy", TimeToLive);
     }
@@ -65,6 +76,16 @@ public class Cloud : MonoBehaviour
         {
             OnLeaveVenue?.Invoke(this);
         }
+    }
+
+    protected virtual void OnBecameVisible()
+    {
+        OnVisibleToCamera?.Invoke(this);
+    }
+
+    protected virtual void OnBecameInvisible()
+    {
+        OnLeaveCamera?.Invoke(this);
     }
 
     void Update()
