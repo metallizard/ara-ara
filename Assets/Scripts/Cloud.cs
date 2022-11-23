@@ -41,7 +41,7 @@ public class Cloud : MonoBehaviour
         _target.OnDestroyed += OnCloudTargetDestroyed;
 
         Speed = Random.Range(0.5f, 1.25f);
-        TimeToLive = 10;
+        TimeToLive = 20;
         Invoke("Destroy", TimeToLive);
     }
 

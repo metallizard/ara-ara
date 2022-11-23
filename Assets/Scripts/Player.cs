@@ -8,6 +8,9 @@ public class Player : MonoBehaviour
     public static event Dead OnDead;
 
     [SerializeField]
+    private Animator _animator;
+
+    [SerializeField]
     private PlayerInput _input;
 
     [SerializeField]
@@ -16,6 +19,8 @@ public class Player : MonoBehaviour
     [SerializeField]
     private bool _alwaysRepel;
 
+    private bool _isStunned = false;
+
     private void Start()
     {
         _input.OnValueChanged += Move;
@@ -23,7 +28,17 @@ public class Player : MonoBehaviour
 
     public void Move(Vector3 direction)
     {
-        transform.Translate(direction * _speed * Time.deltaTime);
+        if (_isStunned) return;
+
+        var clampedDirection = GetClampedDirection(direction);
+
+        transform.Translate(clampedDirection * _speed * Time.deltaTime);
+
+        float h = Mathf.Abs(direction.x) > Mathf.Abs(direction.y) ? direction.x : 0;
+        float v = Mathf.Abs(direction.y) > Mathf.Abs(direction.x) ? direction.y : 0;
+
+        _animator.SetFloat("Vertical", v);
+        _animator.SetFloat("Horizontal", h);
     }
 
     private void Update()
@@ -43,8 +58,57 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void Kill()
+    public void Stun()
     {
-        OnDead?.Invoke();
+        if (_isStunned) return;
+        _isStunned = true;
+        StartCoroutine(Blink(2));
+        Invoke("Unstun", 2);
+    }
+
+    private void Unstun()
+    {
+        _isStunned = false;
+    }
+
+    private IEnumerator Blink(float duration)
+    {
+        SpriteRenderer renderer = GetComponent<SpriteRenderer>();
+        Color col = renderer.color;
+        float blinkRate = 0.1f;
+        while(duration > 0)
+        {
+            col.a = col.a == 1 ? 0 : 1;
+            renderer.color = col;
+            duration -= blinkRate;
+            yield return new WaitForSeconds(blinkRate);
+        }
+
+        col.a = 1;
+        renderer.color = col;
+    }
+
+    private Vector3 GetClampedDirection(Vector3 direction)
+    {
+        Vector3 clamped = direction;
+
+        if (transform.position.x + direction.x > Camera.main.ViewportToWorldPoint(new Vector3(0.95f, 0, 0)).x)
+        {
+            clamped.x = 0;
+        }
+        if (transform.position.x + direction.x < Camera.main.ViewportToWorldPoint(new Vector3(0.05f, 0, 0)).x)
+        {
+            clamped.x = 0;
+        }
+        if (transform.position.y + direction.y > Camera.main.ViewportToWorldPoint(new Vector3(0, 0.95f, 0)).y)
+        {
+            clamped.y = 0;
+        }
+        if (transform.position.y + direction.y < Camera.main.ViewportToWorldPoint(new Vector3(0, 0.05f, 0)).y)
+        {
+            clamped.y = 0;
+        }
+
+        return clamped;
     }
 }

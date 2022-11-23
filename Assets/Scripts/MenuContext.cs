@@ -14,4 +14,15 @@ public class MenuContext : MonoBehaviour
     {
         Application.Quit();
     }
+
+    public void Credits()
+    {
+        SceneManager.LoadScene("Credits");
+    }
+
+    public void MainMenu()
+    {
+        Debug.Log("man menu");
+        SceneManager.LoadScene("MainMenu");
+    }
 }

@@ -31,15 +31,34 @@ public class ThunderCloud : Cloud
 
     private IEnumerator ShootProcedure()
     {
-        float t = Random.Range(2, 6);
+        float t = Random.Range(8, 11);
 
         while(t > 0)
         {
-            t -= Time.deltaTime;
-            yield return null;
+            t -= 1;
+            if (t == 1) StartCoroutine(Blink());
+            yield return new WaitForSeconds(1);
         }
 
         Shoot();
+    }
+
+    private IEnumerator Blink()
+    {
+        float duration = 1;
+        SpriteRenderer renderer = GetComponent<SpriteRenderer>();
+        Color col = renderer.color;
+        float blinkRate = 0.25f;
+        while (duration > 0)
+        {
+            col.a = col.a == 1 ? 0 : 1;
+            renderer.color = col;
+            duration -= blinkRate;
+            yield return new WaitForSeconds(blinkRate);
+        }
+
+        col.a = 1;
+        renderer.color = col;
     }
 
     private void Shoot()

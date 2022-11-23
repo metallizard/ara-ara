@@ -17,7 +17,7 @@ public class Thunder : MonoBehaviour
     {
         if(collision.GetComponent<Player>())
         {
-            collision.GetComponent<Player>().Kill();
+            collision.GetComponent<Player>().Stun();
         }
     }
 

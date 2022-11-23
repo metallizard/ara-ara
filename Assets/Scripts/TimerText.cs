@@ -17,7 +17,7 @@ public class TimerText : MonoBehaviour
 
     private void OnTimerTick(float t)
     {
-        _text.text = $"Venue Time\n{t}";
+        _text.text = $"{t}";
     }
 
     private void OnDestroy()

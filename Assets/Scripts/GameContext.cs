@@ -12,11 +12,20 @@ public class GameContext : MonoBehaviour
     public delegate void VenueListChanged(List<Venue> venues);
     public static event VenueListChanged OnVenueListChanged;
 
+    public delegate void GameOverDelegate();
+    public static event GameOverDelegate OnGameOver;
+
+    public delegate void GameWinDelegate();
+    public static event GameWinDelegate OnGameWin;
+
     [SerializeField]
     private AudioManager _audioManager;
 
     [SerializeField]
     private GameObject _prefabCloud;
+
+    [SerializeField]
+    private GameObject _prefabThunderCloud;
 
     [SerializeField]
     private TargetFinder _targetFinder;
@@ -34,11 +43,15 @@ public class GameContext : MonoBehaviour
 
     private int _cloudVisibleCount = 0;
 
+    private bool _isGameover = false;
+
     private void Awake()
     {
         OnTimerTick += GameContext_OnTimerTick;
         Venue.OnVenueSpawned += OnVenueSpawned;
         Player.OnDead += Player_OnDead;
+
+        Time.timeScale = 1;
     }
 
     private void Start()
@@ -49,23 +62,32 @@ public class GameContext : MonoBehaviour
     // Start is called before the first frame update
     IEnumerator StartGame()
     {
-        _audioManager.Play();
+        _audioManager.PlayBGM();
 
         _timerLoop = TimerLoop();
         StartCoroutine(_timerLoop);
 
-        float count = 3;
+        float count = 30;
         while(count > 0)
         {
             SpawnCloud();
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(3f);
             count--;
         }
     }
 
     private void GameOver()
     {
-        SceneManager.LoadScene("MainMenu");
+        _isGameover = true;
+        _audioManager.OrchestrateGameOverSFX();
+
+        Time.timeScale = 0;
+        OnGameOver?.Invoke();
+    }
+
+    private void GameWin()
+    {
+        OnGameWin?.Invoke();
     }
 
     private IEnumerator TimerLoop()
@@ -76,11 +98,25 @@ public class GameContext : MonoBehaviour
             _gameTime--;
             yield return new WaitForSeconds(1);
         }
+
+        Time.timeScale = 0;
+        GameWin();
     }
 
     private void SpawnCloud()
     {
-        GameObject cloudObject = Instantiate<GameObject>(_prefabCloud, GetSpawnPosition(), Quaternion.identity);
+        var spawnThunder = _clouds.Count % 5 == 0;
+        GameObject cloudObject;
+        if (spawnThunder)
+        {
+            cloudObject = Instantiate<GameObject>(_prefabThunderCloud, GetSpawnPosition(), Quaternion.identity);
+
+        }
+        else
+        {
+            cloudObject = Instantiate<GameObject>(_prefabCloud, GetSpawnPosition(), Quaternion.identity);
+        }
+
         Cloud cloud = cloudObject.GetComponent<Cloud>();
 
         cloud.SetTarget(_targetFinder.GetTarget());
@@ -107,7 +143,7 @@ public class GameContext : MonoBehaviour
     #region Event Listener
     private void Player_OnDead()
     {
-        GameOver();
+        if(!_isGameover) GameOver();
     }
 
     private void Cloud_OnLeaveCamera(Cloud cloud)
@@ -154,13 +190,18 @@ public class GameContext : MonoBehaviour
 
         if (_venues.Count == 0)
         {
-            GameOver();
+            if(!_isGameover) GameOver();
         }
     }
 
     private void GameContext_OnTimerTick(float t)
     {
         DistributeDamage();
+
+        if(t == 5)
+        {
+            _audioManager.Play5SecLeft();
+        }
     }
 
     private void Cloud_OnReachVenue(Cloud cloud, Venue venue)
